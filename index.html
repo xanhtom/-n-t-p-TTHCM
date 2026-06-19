@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ôn Tập Trắc Nghiệm Tư Tưởng Hồ Chí Minh</title>
+    <title>Hệ Thống Ôn Tập Tư Tưởng Hồ Chí Minh</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <style>
         :root {
@@ -109,16 +109,14 @@
     let score = 0;
     let answered = false;
 
-    // Đọc danh sách file Word được chọn
     async function handleFiles(files) {
         if (!files.length) return;
-        document.getElementById('status-text').innerText = "Đang xử lý dữ liệu câu hỏi từ các file Word, vui lòng đợi...";
+        document.getElementById('status-text').innerText = "Đang đọc dữ liệu từ các file Word, vui lòng đợi...";
         questions = []; 
 
         for (let file of files) {
             try {
                 const arrayBuffer = await file.arrayBuffer();
-                // Trích xuất văn bản thô từ file Word
                 const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
                 parseTextToQuestions(result.value);
             } catch (err) {
@@ -127,10 +125,9 @@
         }
 
         if (questions.length > 0) {
-            // Xáo trộn ngẫu nhiên tất cả các câu hỏi nhận được từ các file
+            // Xáo trộn ngẫu nhiên ngân hàng đề thi
             questions.sort(() => Math.random() - 0.5);
             
-            // Ẩn khu vực upload, hiện khu vực làm bài
             document.getElementById('upload-area').style.display = 'none';
             document.getElementById('progress-bar').style.display = 'block';
             document.getElementById('question-box').style.display = 'block';
@@ -140,55 +137,56 @@
             score = 0;
             showQuestion();
         } else {
-            document.getElementById('status-text').innerText = "Lỗi: Không tìm thấy câu hỏi hợp lệ. Hãy chắc chắn rằng file có các từ khóa lựa chọn A, B, C, D và kết thúc bằng dòng 'ANSWER: ĐÁP ÁN'.";
+            document.getElementById('status-text').innerText = "Lỗi: Không trích xuất được câu hỏi. Hãy chắc chắn rằng bạn đang chọn đúng các file Word định dạng .docx chứa câu hỏi ôn tập.";
         }
     }
 
-    // Hàm phân tách văn bản thô cực kỳ linh hoạt để bắt đúng cấu trúc file của bạn
+    // Bộ phân tách dữ liệu nâng cấp để quét sạch các ký tự đặc biệt, tab ẩn, xuống dòng lỗi
     function parseTextToQuestions(text) {
-        // Tách văn bản thành các dòng và dọn dẹp khoảng trắng dư thừa
-        const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+        // Cắt văn bản thô theo các dòng, làm sạch khoảng trắng đầu cuối
+        let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         let currentQuestion = null;
 
         for (let i = 0; i < lines.length; i++) {
             let line = lines[i];
 
-            // 1. Nhận diện dòng đáp án đúng (Bắt được cả tiếng Anh ANSWER và tiếng Việt)
-            if (currentQuestion && /^(ANSWER|Đáp án|Chọn|Đúng|Key)[:\s]*([A-D])/i.test(line)) {
-                let match = line.match(/^(ANSWER|Đáp án|Chọn|Đúng|Key)[:\s]*([A-D])/i);
-                if (match) {
-                    currentQuestion.answer = match[2].toUpperCase();
-                    // Khi đã có đủ câu hỏi, các đáp án và câu trả lời đúng -> Lưu vào bộ đề
+            // 1. Kiểm tra dòng chứa đáp án đúng (Ví dụ: ANSWER: A, ANSWER: D, hoặc Đáp án: A)
+            let answerMatch = line.match(/^(ANSWER|Đáp án|Chọn|Đúng|Key)[:\s\t]*([A-D])/i);
+            if (answerMatch) {
+                if (currentQuestion) {
+                    currentQuestion.answer = answerMatch[2].toUpperCase();
+                    // Đảm bảo nội dung câu hỏi và ít nhất 2 đáp án tồn tại mới lưu vào hệ thống
                     if (currentQuestion.question && (currentQuestion.A || currentQuestion.B || currentQuestion.C || currentQuestion.D)) {
                         questions.push(currentQuestion);
                     }
-                    currentQuestion = null; // Reset để chuẩn bị cho câu tiếp theo
+                    currentQuestion = null; // Tạo khoảng trống nhận câu hỏi mới
                 }
-            } 
-            // 2. Nhận diện các lựa chọn đáp án A, B, C, D (Hỗ trợ cả tab hoặc ký tự đặc biệt đầu dòng)
-            else if (currentQuestion && /^[A][\.\s\t:\)]/i.test(line)) {
-                currentQuestion.A = line.replace(/^[A][\.\s\t:\)]/i, '').trim();
-            } else if (currentQuestion && /^[B][\.\s\t:\)]/i.test(line)) {
-                currentQuestion.B = line.replace(/^[B][\.\s\t:\)]/i, '').trim();
-            } else if (currentQuestion && /^[C][\.\s\t:\)]/i.test(line)) {
-                currentQuestion.C = line.replace(/^[C][\.\s\t:\)]/i, '').trim();
-            } else if (currentQuestion && /^[D][\.\s\t:\)]/i.test(line)) {
-                currentQuestion.D = line.replace(/^[D][\.\s\t:\)]/i, '').trim();
+                continue;
             }
-            // 3. Nếu không thuộc các mục trên và dòng không trống, đó là nội dung câu hỏi mới hoặc câu hỏi dài xuống dòng
-            else {
-                // Nhận diện xem dòng này có phải bắt đầu một câu hỏi mới không (Ví dụ: "Câu 1:", "1.", ...)
-                let isNewQuestionStart = /^(Câu\s*\d+[:\.]|Câu\s*\d+\s*[\/\)]|\d+[:\.\/\)])/i.test(line);
-                
-                if (isNewQuestionStart) {
-                    // Loại bỏ ký tự "Câu X: " ở đầu để lấy nội dung text sạch
-                    let cleanQuestion = line.replace(/^(Câu\s*\d+[:\.]|Câu\s*\d+\s*[\/\)]|\d+[:\.\/\)])/i, '').trim();
-                    currentQuestion = { question: cleanQuestion, A: '', B: '', C: '', D: '', answer: '' };
-                } else if (currentQuestion && !currentQuestion.A && !currentQuestion.B && !currentQuestion.C && !currentQuestion.D) {
-                    // Nếu câu hỏi dài bị ngắt dòng trong file Word, tiến hành cộng dồn chuỗi văn bản
+
+            // 2. Kiểm tra các dòng lựa chọn đáp án A, B, C, D (Sử dụng biểu thức Regex linh hoạt quét sạch Tab/Khoảng trắng ẩn)
+            let optAMatch = line.match(/^A[\.\s\t:\)]+(.*)/i);
+            let optBMatch = line.match(/^B[\.\s\t:\)]+(.*)/i);
+            let optCMatch = line.match(/^C[\.\s\t:\)]+(.*)/i);
+            let optDMatch = line.match(/^D[\.\s\t:\)]+(.*)/i);
+
+            if (optAMatch && currentQuestion) { currentQuestion.A = optAMatch[1].trim(); continue; }
+            if (optBMatch && currentQuestion) { currentQuestion.B = optBMatch[1].trim(); continue; }
+            if (optCMatch && currentQuestion) { currentQuestion.C = optCMatch[1].trim(); continue; }
+            if (optDMatch && currentQuestion) { currentQuestion.D = optDMatch[1].trim(); continue; }
+
+            // 3. Nếu không thuộc phương án hay đáp án, thì dòng này chính là câu hỏi
+            // Nhận diện ký tự đầu câu hỏi: Chữ "Câu X:" hoặc số đầu dòng "1.", "2."
+            let isNewQ = /^(Câu\s*\d+[:\.]|Câu\s*\d+\s*[\/\)]|\d+[:\.\/\)])/i.test(line);
+            if (isNewQ) {
+                let cleanQ = line.replace(/^(Câu\s*\d+[:\.]|Câu\s*\d+\s*[\/\)]|\d+[:\.\/\)])/i, '').trim();
+                currentQuestion = { question: cleanQ, A: '', B: '', C: '', D: '', answer: '' };
+            } else {
+                // Xử lý trường hợp văn bản câu hỏi bị xuống dòng nửa chừng trong file Word
+                if (currentQuestion && !currentQuestion.A && !currentQuestion.B && !currentQuestion.C && !currentQuestion.D) {
                     currentQuestion.question += " " + line;
                 } else if (!currentQuestion) {
-                    // Trường hợp file không ghi rõ chữ "Câu X", tự động coi dòng văn bản lạ là bắt đầu câu hỏi
+                    // Nếu file không có chữ "Câu X", coi dòng văn bản độc lập là câu hỏi mới
                     currentQuestion = { question: line, A: '', B: '', C: '', D: '', answer: '' };
                 }
             }
@@ -232,7 +230,6 @@
             score++;
         } else {
             selectedBtn.classList.add('wrong');
-            // Làm nổi bật đáp án đúng để người dùng học thuộc
             buttons.forEach(btn => {
                 if (btn.innerText.startsWith(correctKey + '.') || btn.innerText.startsWith(correctKey + ' ')) {
                     btn.classList.add('correct');
@@ -254,13 +251,12 @@
     function showResult() {
         document.getElementById('quiz-section').style.display = 'none';
         document.getElementById('score-section').style.display = 'block';
-        document.getElementById('score-text').innerText = `Bạn đã hoàn thành! Trả lời đúng ${score}/${questions.length} câu hỏi.`;
+        document.getElementById('score-text').innerText = `Hoàn thành! Bạn trả lời đúng ${score}/${questions.length} câu hỏi.`;
     }
 
     function restartQuiz() {
         currentIndex = 0;
         score = 0;
-        // Trộn lại bộ đề từ đầu cho lượt học mới
         questions.sort(() => Math.random() - 0.5);
         document.getElementById('quiz-section').style.display = 'block';
         document.getElementById('score-section').style.display = 'none';
