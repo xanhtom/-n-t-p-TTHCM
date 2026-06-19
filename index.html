@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ôn Tập Trắc Nghiệm Từ File Word</title>
-    <!-- Tích hợp thư viện đọc file Word trực tiếp trên trình duyệt -->
+    <title>Ôn Tập Trắc Nghiệm Tư Tưởng Hồ Chí Minh</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <style>
         :root {
@@ -22,17 +21,17 @@
             justify-content: center;
         }
         .container {
-            max-width: 700px;
+            max-width: 750px;
             width: 100%;
             background: white;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        h1 { text-align: center; color: #333; font-size: 24px; }
+        h1 { text-align: center; color: #333; font-size: 24px; margin-bottom: 20px; }
         .upload-section {
             border: 2px dashed #007bff;
-            padding: 30px;
+            padding: 40px 20px;
             text-align: center;
             border-radius: 8px;
             background: #f0f7ff;
@@ -41,46 +40,48 @@
         .file-input-label {
             background: #007bff;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 25px;
             border-radius: 5px;
             cursor: pointer;
             display: inline-block;
             font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         #word-files { display: none; }
         .progress-bar {
-            background: #eee; height: 10px; border-radius: 5px;
+            background: #eee; height: 12px; border-radius: 6px;
             margin-bottom: 20px; overflow: hidden; display: none;
         }
         .progress { background: var(--primary-color); height: 100%; width: 0%; transition: width 0.3s; }
         .question-box { margin-bottom: 20px; display: none; }
-        .question-text { font-size: 18px; font-weight: bold; margin-bottom: 15px; }
-        .options { display: flex; flex-direction: column; gap: 10px; }
+        .question-text { font-size: 18px; font-weight: bold; margin-bottom: 15px; line-height: 1.5; color: #222; }
+        .options { display: flex; flex-direction: column; gap: 12px; }
         .option-btn {
-            padding: 12px; border: 2px solid #ddd; border-radius: 6px;
+            padding: 14px; border: 2px solid #ddd; border-radius: 6px;
             background: white; cursor: pointer; text-align: left;
-            font-size: 16px; transition: all 0.2s;
+            font-size: 16px; transition: all 0.2s; line-height: 1.4;
         }
-        .option-btn:hover:not(:disabled) { background: #f0f0f0; border-color: #bbb; }
-        .option-btn.correct { background-color: #d4edda !important; border-color: var(--success-color) !important; color: #155724; }
+        .option-btn:hover:not(:disabled) { background: #f4f4f4; border-color: #bbb; }
+        .option-btn.correct { background-color: #d4edda !important; border-color: var(--success-color) !important; color: #155724; font-weight: bold; }
         .option-btn.wrong { background-color: #f8d7da !important; border-color: var(--danger-color) !important; color: #721c24; }
-        .controls { margin-top: 20px; display: none; justify-content: space-between; }
-        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; background: var(--primary-color); color: white; }
+        .controls { margin-top: 25px; display: none; justify-content: space-between; align-items: center; }
+        .btn { padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; background: var(--primary-color); color: white; font-weight: bold; }
         .btn:disabled { background: #ccc; cursor: not-allowed; }
         .score-box { text-align: center; display: none; }
+        #question-counter { font-size: 16px; font-weight: bold; color: #555; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 id="quiz-title">Ôn Tập Trắc Nghiệm Tư Tưởng HCM</h1>
+    <h1 id="quiz-title">Hệ Thống Ôn Tập Tư Tưởng Hồ Chí Minh</h1>
     
-    <!-- Vùng tải file Word lên -->
     <div id="upload-area" class="upload-section">
-        <p style="margin-bottom: 15px; color: #555;">Tải lên các file câu hỏi Word (.docx) của bạn để bắt đầu làm bài</p>
-        <label class="file-input-label" for="word-files">Chọn các file Word (.docx)</label>
+        <p style="margin-bottom: 20px; color: #444; font-size: 16px;">Tải lên cùng lúc các file <b>.docx</b> của bạn để bắt đầu ôn tập</p>
+        <label class="file-input-label" for="word-files">Chọn các file Word câu hỏi</label>
         <input type="file" id="word-files" accept=".docx" multiple onchange="handleFiles(this.files)">
-        <p id="status-text" style="margin-top: 10px; font-size: 14px; color: #666;"></p>
+        <p id="status-text" style="margin-top: 15px; font-size: 14px; color: #e65100; font-weight: bold;"></p>
     </div>
 
     <div id="quiz-section">
@@ -97,8 +98,8 @@
 
     <div id="score-section" class="score-box">
         <h1>Kết Quả Ôn Tập</h1>
-        <p style="font-size: 22px;" id="score-text"></p>
-        <button class="btn" onclick="restartQuiz()">Luyện tập lại</button>
+        <p style="font-size: 22px; color: #28a745; font-weight: bold;" id="score-text"></p>
+        <button class="btn" onclick="restartQuiz()">Luyện tập lại (Xáo trộn lại)</button>
     </div>
 </div>
 
@@ -108,15 +109,16 @@
     let score = 0;
     let answered = false;
 
-    // Hàm đọc và xử lý danh sách file Word được chọn
+    // Đọc danh sách file Word được chọn
     async function handleFiles(files) {
         if (!files.length) return;
-        document.getElementById('status-text').innerText = "Đang đọc dữ liệu từ các file Word...";
-        questions = []; // Xóa câu hỏi cũ nếu có
+        document.getElementById('status-text').innerText = "Đang xử lý dữ liệu câu hỏi từ các file Word, vui lòng đợi...";
+        questions = []; 
 
         for (let file of files) {
             try {
                 const arrayBuffer = await file.arrayBuffer();
+                // Trích xuất văn bản thô từ file Word
                 const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
                 parseTextToQuestions(result.value);
             } catch (err) {
@@ -125,9 +127,10 @@
         }
 
         if (questions.length > 0) {
-            // Trộn ngẫu nhiên câu hỏi
+            // Xáo trộn ngẫu nhiên tất cả các câu hỏi nhận được từ các file
             questions.sort(() => Math.random() - 0.5);
-            // Ẩn vùng tải file và hiện vùng làm bài
+            
+            // Ẩn khu vực upload, hiện khu vực làm bài
             document.getElementById('upload-area').style.display = 'none';
             document.getElementById('progress-bar').style.display = 'block';
             document.getElementById('question-box').style.display = 'block';
@@ -137,49 +140,58 @@
             score = 0;
             showQuestion();
         } else {
-            document.getElementById('status-text').innerText = "Không tìm thấy cấu trúc câu hỏi trắc nghiệm hợp lệ trong file. Vui lòng kiểm tra lại.";
+            document.getElementById('status-text').innerText = "Lỗi: Không tìm thấy câu hỏi hợp lệ. Hãy chắc chắn rằng file có các từ khóa lựa chọn A, B, C, D và kết thúc bằng dòng 'ANSWER: ĐÁP ÁN'.";
         }
     }
 
-    // Hàm phân tách văn bản thô từ file Word thành cấu trúc câu hỏi
+    // Hàm phân tách văn bản thô cực kỳ linh hoạt để bắt đúng cấu trúc file của bạn
     function parseTextToQuestions(text) {
-        // Tách văn bản thành các dòng, loại bỏ dòng trống
+        // Tách văn bản thành các dòng và dọn dẹp khoảng trắng dư thừa
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
         let currentQuestion = null;
 
         for (let i = 0; i < lines.length; i++) {
             let line = lines[i];
 
-            // Nhận diện dòng bắt đầu câu hỏi (ví dụ: "Câu 1:", "Câu 10.", "1.", "2/")
-            if (/^(Câu\s*\d+[:\.]|Câu\s*\d+\s*[\/\)]|\d+[:\.\/\)])/i.test(line)) {
-                if (currentQuestion && currentQuestion.question && currentQuestion.answer) {
-                    questions.push(currentQuestion);
+            // 1. Nhận diện dòng đáp án đúng (Bắt được cả tiếng Anh ANSWER và tiếng Việt)
+            if (currentQuestion && /^(ANSWER|Đáp án|Chọn|Đúng|Key)[:\s]*([A-D])/i.test(line)) {
+                let match = line.match(/^(ANSWER|Đáp án|Chọn|Đúng|Key)[:\s]*([A-D])/i);
+                if (match) {
+                    currentQuestion.answer = match[2].toUpperCase();
+                    // Khi đã có đủ câu hỏi, các đáp án và câu trả lời đúng -> Lưu vào bộ đề
+                    if (currentQuestion.question && (currentQuestion.A || currentQuestion.B || currentQuestion.C || currentQuestion.D)) {
+                        questions.push(currentQuestion);
+                    }
+                    currentQuestion = null; // Reset để chuẩn bị cho câu tiếp theo
                 }
-                // Loại bỏ phần chữ "Câu X: " ở đầu để lấy nội dung câu hỏi sạch
-                let cleanQuestion = line.replace(/^(Câu\s*\d+[:\.]|Câu\s*\d+\s*[\/\)]|\d+[:\.\/\)])/i, '').trim();
-                currentQuestion = { question: cleanQuestion, A: '', B: '', C: '', D: '', answer: '' };
             } 
-            // Nhận diện các lựa chọn đáp án A, B, C, D
-            else if (currentQuestion) {
-                if (/^[A][:\.\)\s]/i.test(line)) {
-                    currentQuestion.A = line.replace(/^[A][:\.\)\s]/i, '').trim();
-                } else if (/^[B][:\.\)\s]/i.test(line)) {
-                    currentQuestion.B = line.replace(/^[B][:\.\)\s]/i, '').trim();
-                } else if (/^[C][:\.\)\s]/i.test(line)) {
-                    currentQuestion.C = line.replace(/^[C][:\.\)\s]/i, '').trim();
-                } else if (/^[D][:\.\)\s]/i.test(line)) {
-                    currentQuestion.D = line.replace(/^[D][:\.\)\s]/i, '').trim();
-                } 
-                // Nhận diện dòng đáp án đúng (Ví dụ: "Đáp án: A" hoặc "Chọn A" hoặc chỉ ghi "Đúng: A")
-                else if (/(Đáp án|Chọn|Đúng|Key)[:\s]*([A-D])/i.test(line)) {
-                    let match = line.match(/(Đáp án|Chọn|Đúng|Key)[:\s]*([A-D])/i);
-                    if (match) currentQuestion.answer = match[2].toUpperCase();
+            // 2. Nhận diện các lựa chọn đáp án A, B, C, D (Hỗ trợ cả tab hoặc ký tự đặc biệt đầu dòng)
+            else if (currentQuestion && /^[A][\.\s\t:\)]/i.test(line)) {
+                currentQuestion.A = line.replace(/^[A][\.\s\t:\)]/i, '').trim();
+            } else if (currentQuestion && /^[B][\.\s\t:\)]/i.test(line)) {
+                currentQuestion.B = line.replace(/^[B][\.\s\t:\)]/i, '').trim();
+            } else if (currentQuestion && /^[C][\.\s\t:\)]/i.test(line)) {
+                currentQuestion.C = line.replace(/^[C][\.\s\t:\)]/i, '').trim();
+            } else if (currentQuestion && /^[D][\.\s\t:\)]/i.test(line)) {
+                currentQuestion.D = line.replace(/^[D][\.\s\t:\)]/i, '').trim();
+            }
+            // 3. Nếu không thuộc các mục trên và dòng không trống, đó là nội dung câu hỏi mới hoặc câu hỏi dài xuống dòng
+            else {
+                // Nhận diện xem dòng này có phải bắt đầu một câu hỏi mới không (Ví dụ: "Câu 1:", "1.", ...)
+                let isNewQuestionStart = /^(Câu\s*\d+[:\.]|Câu\s*\d+\s*[\/\)]|\d+[:\.\/\)])/i.test(line);
+                
+                if (isNewQuestionStart) {
+                    // Loại bỏ ký tự "Câu X: " ở đầu để lấy nội dung text sạch
+                    let cleanQuestion = line.replace(/^(Câu\s*\d+[:\.]|Câu\s*\d+\s*[\/\)]|\d+[:\.\/\)])/i, '').trim();
+                    currentQuestion = { question: cleanQuestion, A: '', B: '', C: '', D: '', answer: '' };
+                } else if (currentQuestion && !currentQuestion.A && !currentQuestion.B && !currentQuestion.C && !currentQuestion.D) {
+                    // Nếu câu hỏi dài bị ngắt dòng trong file Word, tiến hành cộng dồn chuỗi văn bản
+                    currentQuestion.question += " " + line;
+                } else if (!currentQuestion) {
+                    // Trường hợp file không ghi rõ chữ "Câu X", tự động coi dòng văn bản lạ là bắt đầu câu hỏi
+                    currentQuestion = { question: line, A: '', B: '', C: '', D: '', answer: '' };
                 }
             }
-        }
-        // Thêm câu hỏi cuối cùng vào danh sách
-        if (currentQuestion && currentQuestion.question && currentQuestion.answer) {
-            questions.push(currentQuestion);
         }
     }
 
@@ -220,8 +232,9 @@
             score++;
         } else {
             selectedBtn.classList.add('wrong');
+            // Làm nổi bật đáp án đúng để người dùng học thuộc
             buttons.forEach(btn => {
-                if (btn.innerText.startsWith(correctKey + '.')) {
+                if (btn.innerText.startsWith(correctKey + '.') || btn.innerText.startsWith(correctKey + ' ')) {
                     btn.classList.add('correct');
                 }
             });
@@ -241,12 +254,13 @@
     function showResult() {
         document.getElementById('quiz-section').style.display = 'none';
         document.getElementById('score-section').style.display = 'block';
-        document.getElementById('score-text').innerText = `Bạn trả lời đúng ${score}/${questions.length} câu hỏi.`;
+        document.getElementById('score-text').innerText = `Bạn đã hoàn thành! Trả lời đúng ${score}/${questions.length} câu hỏi.`;
     }
 
     function restartQuiz() {
         currentIndex = 0;
         score = 0;
+        // Trộn lại bộ đề từ đầu cho lượt học mới
         questions.sort(() => Math.random() - 0.5);
         document.getElementById('quiz-section').style.display = 'block';
         document.getElementById('score-section').style.display = 'none';
